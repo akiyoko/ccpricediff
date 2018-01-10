@@ -47,8 +47,8 @@
             columns: [
                 {title: "Exchange", field: "exchange_id", sorter: "string"},
                 {title: "Currency Pair", field: "symbol", sorter: "string"},
-                {title: "Price (USD)", field: "price_usd", sorter: "number", align: "right", formatter: "money", formatterParams: {precision: 0, symbol: "$"}},
-                {title: "Price (EUR)", field: "price_eur", sorter: "number", align: "right", formatter: "money", formatterParams: {precision: 0, symbol: "€"}},
+                {title: "Price (USD)", field: "price_usd", sorter: "number", align: "right", formatter: "money", formatterParams: {precision: 2, symbol: "$"}},
+                {title: "Price (EUR)", field: "price_eur", sorter: "number", align: "right", formatter: "money", formatterParams: {precision: 2, symbol: "€"}},
                 {title: "Price (JPY)", field: "price_jpy", sorter: "number", align: "right", formatter: "money", formatterParams: {precision: 0, symbol: "¥"}},
                 {title: "差額 (JPY)", field: "diff_jpy", sorter: "number", align: "right", formatter: "money", formatterParams: {precision: 0, symbol: "¥"}},
             ],
