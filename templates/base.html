@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+{% load i18n %}
+{% load static %}
+{% load bootstrap3 %}
+{% bootstrap_css %}
+{% bootstrap_javascript jquery=True %}
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>{% block title %}{{ settings.SITE_TITLE }}{% endblock %}</title>
+
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/tabulator/3.3.3/css/tabulator.min.css" rel="stylesheet">
+        {% block extra_css %}{% endblock %}
+
+        <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/tabulator/3.3.3/js/tabulator.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.20.1/moment.min.js"></script>
+        {% block extra_js %}{% endblock %}
+
+        {% block extra_head %}{% endblock %}
+    </head>
+<body>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-10 col-md-offset-1 col-sm-12">
+            {% block content %}{% endblock %}
+        </div>
+    </div>
+</div>
+{% block footer_js %}{% endblock %}
+</body>
+</html>
