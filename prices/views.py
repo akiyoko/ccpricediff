@@ -3,8 +3,10 @@ from datetime import datetime
 from pprint import pprint
 
 from ccxt.base.errors import NetworkError
+from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.shortcuts import render
+from django.utils.decorators import method_decorator
 from django.views.generic import View
 
 from .utils import get_crypto_ticker, get_usdjpy, get_eurjpy
@@ -59,11 +61,13 @@ class Currency:
         return str(self.to_dict())
 
 
+@method_decorator(login_required, name='dispatch')
 class PricesIndexView(View):
     def get(self, request, *args, **kwargs):
         return render(request, 'prices/index.html')
 
 
+@method_decorator(login_required, name='dispatch')
 class CurrentPriceView(View):
     def get(self, request, *args, **kwargs):
         symbol = request.GET.get('symbol')

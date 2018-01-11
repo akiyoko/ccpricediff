@@ -1,5 +1,6 @@
 ccxt
 Django<2
+django-allauth
 django-bootstrap3
 gunicorn
 pprint
