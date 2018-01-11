@@ -2,7 +2,7 @@ from collections import namedtuple
 from datetime import datetime
 from pprint import pprint
 
-from ccxt.base.errors import RequestTimeout
+from ccxt.base.errors import NetworkError
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.views.generic import View
@@ -93,26 +93,28 @@ class CurrentPriceView(View):
         currencies = []
         max_price_jpy = 0
         min_price_jpy = float('inf')
-        try:
-            for target in targets:
+        for target in targets:
+            try:
                 ticker = get_crypto_ticker(target.exchange_id, target.currency_pair)
-                # print('--- {} {}--------'.format(target.exchange_id, target.currency_pair))
+                # print('--- {} {} ---'.format(target.exchange_id, target.currency_pair))
                 # pprint(ticker)
-                currency = Currency(target.exchange_id, ticker, fiat_rates)
-                currencies.append(currency.to_dict())
-                max_price_jpy = max(max_price_jpy, currency.price_jpy)
-                min_price_jpy = min(min_price_jpy, currency.price_jpy)
+            except NetworkError as e:
+                print(e)
+                continue
+            currency = Currency(target.exchange_id, ticker, fiat_rates)
+            currencies.append(currency.to_dict())
+            max_price_jpy = max(max_price_jpy, currency.price_jpy)
+            min_price_jpy = min(min_price_jpy, currency.price_jpy)
 
-            return JsonResponse({
-                # 'currencies': currencies,
-                'currencies': [dict(c, diff_jpy=c['price_jpy'] - min_price_jpy) for c in currencies],
-                'now': now.strftime('%Y/%m/%d %H:%M:%S'),
-                'symbol': symbol,
-                'usd_jpy': usd_jpy,
-                'eur_jpy': eur_jpy,
-            })
-        except RequestTimeout as e:
-            return JsonResponse({
-                'status': False,
-                'message': 'Timeout'
-            }, status=500)
+        return JsonResponse({
+            # 'currencies': currencies,
+            'currencies': [dict(c, diff_jpy=c['price_jpy'] - min_price_jpy) for c in currencies],
+            'now': now.strftime('%Y/%m/%d %H:%M:%S'),
+            'symbol': symbol,
+            'usd_jpy': usd_jpy,
+            'eur_jpy': eur_jpy,
+        })
+        # return JsonResponse({
+        #     'status': False,
+        #     'message': 'Timeout'
+        # }, status=500)
