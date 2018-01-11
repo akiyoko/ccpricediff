@@ -1,6 +1,7 @@
 ccxt
 Django<2
 django-bootstrap3
+gunicorn
 pprint
 pymongo
 requests
