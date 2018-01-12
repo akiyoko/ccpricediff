@@ -77,8 +77,8 @@ class CurrentPriceView(View):
         usd_jpy = get_usdjpy()
         eur_jpy = get_eurjpy()
         # TODO: Dummy
-        # usd_jpy = 111.1
-        # eur_jpy = 133.3
+        # usd_jpy = 111.111
+        # eur_jpy = 133.333
         print('USD/JPY={}'.format(usd_jpy))
         print('EUR/JPY={}'.format(eur_jpy))
         fiat_rates = {
@@ -112,7 +112,7 @@ class CurrentPriceView(View):
 
         return JsonResponse({
             # 'currencies': currencies,
-            'currencies': [dict(c, diff_jpy=c['price_jpy'] - min_price_jpy) for c in currencies],
+            'currencies': [dict(c, diff_jpy=c['price_jpy'] - min_price_jpy, diff_jpy_rate=(c['price_jpy'] - min_price_jpy) / c['price_jpy'] * 100) for c in currencies],
             'now': now.strftime('%Y/%m/%d %H:%M:%S'),
             'symbol': symbol,
             'usd_jpy': usd_jpy,

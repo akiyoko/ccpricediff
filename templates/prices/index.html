@@ -1,5 +1,14 @@
 {% extends "base.html" %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tabulator/3.3.3/css/tabulator.min.css">
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tabulator/3.3.3/js/tabulator.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.20.1/moment.min.js"></script>
+{% endblock %}
+
 {% block content %}
 <div id="my-container">
     <div id="my-tab">
@@ -10,24 +19,26 @@
         </ul>
     </div>
     <div id="my-tab-content" class="tab-content">
-       <div id="example-table"></div>
+        <div id="example-table"></div>
     </div>
+    <br />
     <div id="currencies">
-        USD/JPY : <div id="usd-jpy"></div>
-        EUR/JPY : <div id="eur-jpy"></div>
+        <div id="usd-jpy"><span class="currency">USD/JPY</span> : <span class="price"></span></div>
+        <div id="eur-jpy"><span class="currency">EUR/JPY</span> : <span class="price"></span></div>
     </div>
 </div>
 
 <script type="text/javascript">
     // Initialize table
+    Tabulator.extendExtension("format", "formatters", {
+        percent: function (cell, formatterParams) {
+            return cell.getValue().toFixed(2) + "%";
+        }
+    });
     $("#example-table").tabulator({
-        layout: "fitColumns",
-        tooltips: true,
-        addRowPos: "top",
-        history: true,
+        layout:"fitDataFill",
         pagination: "local",
-        paginationSize: 7,
-        movableColumns: true,
+        paginationSize: 10,
         initialSort: [
             {column: "price_jpy", dir: "desc"},
         ],
@@ -38,10 +49,11 @@
             {title: "Price (EUR)", field: "price_eur", sorter: "number", align: "right", formatter: "money", formatterParams: {precision: 2, symbol: "€"}},
             {title: "Price (JPY)", field: "price_jpy", sorter: "number", align: "right", formatter: "money", formatterParams: {precision: 0, symbol: "¥"}},
             {title: "差額 (JPY)", field: "diff_jpy", sorter: "number", align: "right", formatter: "money", formatterParams: {precision: 0, symbol: "¥"}},
+            {title: "差額％ (JPY)", field: "diff_jpy_rate", sorter: "number", align: "right", formatter: "percent"},
         ],
-        ajaxResponse: function(url, params, response) {
-            $("#currencies #usd-jpy").text(response.usd_jpy);
-            $("#currencies #eur-jpy").text(response.eur_jpy);
+        ajaxResponse: function (url, params, response) {
+            $("#currencies #usd-jpy > span.price").text(response.usd_jpy.toFixed(2));
+            $("#currencies #eur-jpy > span.price").text(response.eur_jpy.toFixed(2));
             return response.currencies;
         },
         // ajaxError: function(xhr, textStatus, errorThrown) {
@@ -50,9 +62,9 @@
         //     console.log("errorThrown=", errorThrown);
         //     console.log("message=", xhr.responseJSON.message);
         // },
-        rowFormatter: function(row) {
+        rowFormatter: function (row) {
             var data = row.getData();
-            row.getElement().css({"background-color": "hsl(120, " + 100 * (data.diff_jpy / data.price_jpy) * 10 + "%, 50%, 0.3)"});
+            row.getElement().css({"background-color": "hsl(120, " + data.diff_jpy_rate * 10 + "%, 50%, 0.3)"});
         },
     });
 
@@ -66,4 +78,4 @@
         $("#example-table").tabulator("setData", "{% url 'prices:current' %}", {"symbol": target});
     });
 </script>
-{%endblock%}
+{% endblock %}
