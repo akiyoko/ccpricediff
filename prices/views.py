@@ -11,22 +11,29 @@ from django.views.generic import View
 
 from .utils import get_crypto_ticker, get_usdjpy, get_eurjpy
 
-Target = namedtuple('Target', ('exchange_id', 'currency_pair'))
+Target = namedtuple('Target', ('exchange_id', 'currency_pair', 'currency_pair2'))
 
 BTC_TARGETS = [
-    Target('kraken', 'BTC/EUR'),
-    Target('zaif', 'BTC/JPY'),
-    Target('coincheck', 'BTC/JPY'),
+    Target('kraken', 'BTC/USD', None),
+    Target('kraken', 'BTC/EUR', None),
+    Target('zaif', 'BTC/JPY', None),
+    Target('coincheck', 'BTC/JPY', None),
 ]
 BCH_TARGETS = [
-    Target('kraken', 'BCH/EUR'),
-    Target('zaif', 'BCH/JPY'),
-    Target('poloniex', 'BCH/USDT'),
+    Target('kraken', 'BCH/USD', None),
+    Target('kraken', 'BCH/EUR', None),
+    Target('kraken', 'BCH/BTC', 'BTC/USD'),
+    Target('kraken', 'BCH/BTC', 'BTC/EUR'),
+    Target('zaif', 'BCH/JPY', None),
+    Target('zaif', 'BCH/BTC', 'BTC/JPY'),
 ]
 ETH_TARGETS = [
-    Target('kraken', 'ETH/EUR'),
-    Target('zaif', 'ETH/JPY'),
-    Target('poloniex', 'ETH/USDT'),
+    Target('kraken', 'ETH/USD', None),
+    Target('kraken', 'ETH/EUR', None),
+    Target('kraken', 'ETH/BTC', 'BTC/USD'),
+    Target('kraken', 'ETH/BTC', 'BTC/EUR'),
+    Target('zaif', 'ETH/JPY', None),
+    Target('zaif', 'ETH/BTC', 'BTC/JPY'),
 ]
 
 
@@ -34,7 +41,7 @@ class Currency:
     def __init__(self, exchange_id, ticker, fiat_rates=None):
         self.exchange_id = exchange_id
         self.symbol = ticker['symbol']
-        self.base_currency = ticker['symbol'].split('/')[1]
+        self.base_currency = ticker['symbol'].split('/')[-1]
         last_price = ticker['last']
         self.price_usd = None
         self.price_eur = None
@@ -102,10 +109,17 @@ class CurrentPriceView(View):
                 ticker = get_crypto_ticker(target.exchange_id, target.currency_pair)
                 # print('--- {} {} ---'.format(target.exchange_id, target.currency_pair))
                 # pprint(ticker)
+                currency = Currency(target.exchange_id, ticker, fiat_rates)
+                # NOTE: Overwrite currency if currency_pair2 is set
+                if target.currency_pair2:
+                    ticker2 = get_crypto_ticker(target.exchange_id, target.currency_pair2)
+                    # NOTE: symbol is set to be like 'ETH/BTC/USD'
+                    ticker['symbol'] = '{}/{}'.format(target.currency_pair, target.currency_pair2.split('/')[1])
+                    ticker['last'] = ticker['last'] * ticker2['last']
+                    currency = Currency(target.exchange_id, ticker, fiat_rates)
             except NetworkError as e:
                 print(e)
                 continue
-            currency = Currency(target.exchange_id, ticker, fiat_rates)
             currencies.append(currency.to_dict())
             max_price_jpy = max(max_price_jpy, currency.price_jpy)
             min_price_jpy = min(min_price_jpy, currency.price_jpy)
